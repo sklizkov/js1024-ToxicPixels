@@ -1,0 +1,152 @@
+<!doctype html>
+
+<head>
+  <title>work in progress ~ js1024</title>
+  <meta name="author" content="author" />
+  <meta name="description" content="description" />
+  <meta name="title" content="title" />
+  <meta charset="utf-8" />
+</head>
+
+<body id="b">
+  <canvas id="a"></canvas>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    #a {
+      position: relative;
+      display: block;
+    }
+
+    .play {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translateX(-50%) translateY(-50%);
+      font-size: 30px;
+      font-family: arial, sans-serif;
+      background: #f3f4f5;
+      padding: 15px;
+      border: 2px solid #ddd;
+      border-radius: 5px;
+    }
+
+    /* for mobile */
+    :root {
+      touch-action: pan-x pan-y;
+      height: 100%;
+    }
+  </style>
+
+  <script>
+    // Entry configuration
+    // ===================
+
+    var title = "title";
+
+    // Shim setup and polyfills (do not edit)
+    // ======================================
+
+    a = document.getElementById("a");
+    a.width = innerWidth;
+    a.height = innerHeight;
+
+    b = document.getElementById("b");
+
+    c = a.getContext("2d");
+    d = document;
+
+    var M = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent); // detects if the user is on mobile
+
+    if (M) {
+      a.oncontextmenu = function (e) {
+        e.preventDefault();
+      }; // prevents context menu on mobile
+    }
+
+    window.AudioContext = window.AudioContext || window.webkitAudioContext;
+    window.requestAnimationFrame =
+      window.requestAnimationFrame ||
+      window.mozRequestAnimationFrame ||
+      window.webkitRequestAnimationFrame ||
+      window.msRequestAnimationFrame;
+    a.requestPointerLock =
+      a.requestPointerLock ||
+      a.mozRequestPointerLock ||
+      a.webkitRequestPointerLock;
+    navigator.getUserMedia =
+      navigator.getUserMedia ||
+      navigator.webkitGetUserMedia ||
+      navigator.mozGetUserMedia ||
+      navigator.msGetUserMedia;
+    if (typeof OscillatorNode !== "undefined" && OscillatorNode.prototype) {
+      OscillatorNode.prototype.start =
+        OscillatorNode.prototype.start || OscillatorNode.prototype.noteOn;
+      OscillatorNode.prototype.stop =
+        OscillatorNode.prototype.stop || OscillatorNode.prototype.noteOff;
+    }
+
+    // Add a start button if sound is present in the code
+    onload = () => {
+      var entry_code = entry.innerText;
+      var has_sound = false;
+      if (entry_code.includes("eval")) {
+        try {
+          parent.eval(
+            entry_code
+              .replace(/eval\(/g, "throw(")
+              .replace(/eval\`/g, "throw`"),
+          );
+        } catch (e) {
+          entry_code = e;
+        }
+      }
+
+      try {
+        if (
+          entry_code.includes("AudioContext") ||
+          entry_code.includes("Oscillator") ||
+          entry_code.includes("speak") ||
+          entry_code.includes("play") ||
+          entry_code.includes("autoplay")
+        ) {
+          b.insertAdjacentHTML(
+            "beforeEnd",
+            "<button class='play' onclick='start_demo(this)'>PLAY</button>",
+          );
+        } else {
+          parent.eval(entry.innerText);
+        }
+      } catch (e) {
+        // I have no idea what this does but I think it will make demos that contain eval naturally (no compressor used) work
+        entry_code = entry.innerText;
+        parent.eval(entry_code);
+      }
+    };
+
+    // Makes the "window." be optional in the demo code
+    function start_demo(button) {
+      console.log(entry.innerText);
+      parent.eval(entry.innerText);
+      button.remove();
+    }
+
+    console.log(
+      a, // canvas
+      b, // body
+      c, // 2D canvas context
+      d, // document
+    );
+  </script>
+
+  <script type="text" id="entry">
+    // Your entry goes here 👇
+    // =======================
+    for(var r=Math,e=r.floor,o=a.width,t=a.height,f=64,i=e(r.min(o,t)/f),v=i*f,n=e((o-v)/2),l=e((t-v)/2),m=[],h=[],s={},d=(r,a)=>r[0]*a[0]+r[1]*a[1],u=r=>r*r*r*(r*(6*r-15)+10),y=(r,a,e)=>(1-e)*r+e*a,g=256;g--;)m[g]=m[g+256]=e(256*r.random()),h[g]=h[g+256]=[[1,1,0],[-1,1,0],[1,-1,0],[-1,-1,0],[1,0,1],[-1,0,1],[1,0,-1],[-1,0,-1],[0,1,1],[0,-1,1],[0,1,-1],[0,-1,-1]][m[g]%8];var p=(r,a)=>{var o=e(r),t=e(a);return r-=o,a-=t,y(y(d(h[(o&=255)+m[t&=255]],[r,a]),d(h[o+1+m[t]],[r-1,a]),u(r)),y(d(h[o+m[t+1]],[r,a-1]),d(h[o+1+m[t+1]],[r-1,a-1]),u(r)),u(a))};a.onmousemove=r=>{var a=r.offsetX,o=r.offsetY,t=e((a-n)/i)+e((o-l)/i)*f;a>n&&a<n+v&&o>l&&o<l+v&&(s[t]=1)};var q=(a=0)=>{a*=2e-4;for(var e=4096;e--;){var o=e%f,t=e>>6,v=p(o/30+a,t/30+a)*p(o/45-a,t/45-a)*720;for(var m in s){var h=r.hypot(m%f-o,(m>>6)-t);v+=r.min(r.max(0,150-(8-2*r.sin(h*(.2+s[m])-25*a))*h),255)*s[m]*.1}s[e]&&s[e]>0?s[e]-=.01:delete s[e],c.fillStyle=`hsl(${v+64*a},50%,50%)`,c.fillRect(n+o*i,l+t*i,i,i)}requestAnimationFrame(q)};q();
+    // =======================
+  </script>
+</body>
