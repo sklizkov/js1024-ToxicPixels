@@ -11,7 +11,7 @@ const server = browserSync.create()
 function js() {
   return src('./src/main.js')
     .pipe(rename('readable.js'))
-    .pipe(dest('./build'))
+    .pipe(dest('./dist'))
     .pipe(terser({
       module: true,
       compress: {},
@@ -22,20 +22,20 @@ function js() {
     }))
     .pipe(rename('min.js'))
     .pipe(size())
-    .pipe(dest('./build'));
+    .pipe(dest('./dist'));
 }
 
 function html() {
   return src('./src/*.html')
     .pipe(inject())
     .pipe(rename('index.html'))
-    .pipe(dest('./build'));
+    .pipe(dest('./dist'));
 }
 
 function serve(cb) {
   server.init({
     server: {
-      baseDir: './build'
+      baseDir: './dist'
     },
     port: 1337,
   });
